@@ -3,7 +3,7 @@ mvn dependency:resolve
 mvn spring-boot:run
 
 
-set GEMINI_API_KEY=AIzaSyCgmuTOvNtvr5_wnyO7AFkVoei5EOoqrqU
+
 
 .\mvnw.cmd spring-boot:run -Dspring-boot.run.jvmArguments="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8000"
 
