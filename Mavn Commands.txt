@@ -21,8 +21,8 @@ Launcher.json file
             "mainClass": "com.cm.spring_ai_demo.SpringAiDemoApplication",
             "projectName": "spring-ai-demo",
             "env": {
-                "GEMINI_API_KEY": "AIzaSyCgmuTOvNtvr5_wnyO7AFkVoei5EOoqrqU",
-                "GOOGLE_PROJECT_ID": "gen-lang-client-0813866287 "
+                "GEMINI_API_KEY": "AIzaSyCgmuTOvNtvr5_wnyO7AFkVoei5EU",
+                "GOOGLE_PROJECT_ID": "gen-lang-client-0813287 "
             }
         }
     ]
