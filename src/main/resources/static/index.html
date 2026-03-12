@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spring AI Demo</title>
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f4f7f6; }
+        .card { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; }
+        h1 { color: #2c3e50; }
+        code { background: #eee; padding: 0.2rem 0.4rem; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Spring AI: From Zero to Hero</h1>
+        <input type="text" id="userPrompt" placeholder="Ask Gemini something...">
+
+        <button onclick="askGemini()">Ask AI</button>
+        
+        <div id="aiResponse" style="margin-top: 20px; font-weight: bold; color: #2c3e50;">
+        AI response will appear here...
+        </div>
+
+    </div>
+</body>
+</html>
+
+
+<script>
+
+    async function askGemini() {
+        const input = document.getElementById('userPrompt');
+        const display = document.getElementById('aiResponse');
+        const button = document.querySelector('button');
+        console.log('AskGemini is called');
+        // 1. Get the user's message
+        const message = input.value;
+        if (!message) return alert("Please type something first!");
+
+        // 2. Show a loading state
+        display.innerText = "Gemini is thinking...";
+        button.disabled = true;
+
+        try {
+            // 3. The Fetch Call (Our Voice talking to the REST Controller)
+            // We use the URL defined in our Java Controller: /api/chat
+            const response = await fetch(`/api/chat?message=${encodeURIComponent(message)}`);
+
+            // 4. Convert the 'Universal Language' (JSON) back to a Java Script Object
+            const data = await response.json();
+
+            // 5. Update the UI with the 'answer' from our Java Record
+            display.innerText = data.answer;
+            
+            
+        } catch (error) {
+            display.innerText = "Error: Could not connect to the AI server.";
+            console.error("Fetch error:", error);
+        } finally {
+            button.disabled = false;
+        }
+
+    }
+
+
+
+</script>
