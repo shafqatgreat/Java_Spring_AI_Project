@@ -1,25 +1,49 @@
 package com.cm.spring_ai_demo.service;
 
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
+import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.stereotype.Service;
+
+
+// Updated for 1.1.2 compatibility
+import static org.springframework.ai.chat.memory.ChatMemory.CONVERSATION_ID;
+
 
 @Service // Hiring the staff!
 public class GeminiService {
     
+    private static final Logger logger = LoggerFactory.getLogger(GeminiService.class);
+
     private final ChatClient chatClient;
+    private final ChatMemory chatMemory;
     
-    // The question is: Do we need 'new ChatClient()'? 
-    // The answer is: No! Spring injects it here.
-    public GeminiService(ChatClient.Builder builder) {
-        this.chatClient = builder.build();
+    
+    public GeminiService(ChatClient.Builder builder, ChatMemory chatMemory) {
+        this.chatMemory = chatMemory;
+        this.chatClient = builder
+                .defaultSystem("You are CodingMavrick AI, a Senior Java Developer assistant.")
+                .defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
+                .build();
         System.out.println("API KEY IS: " + System.getenv("GEMINI_API_KEY"));
     }
 
-    public String generateResponse(String userPrompt) {
-        return this.chatClient.prompt()
-                .user(userPrompt)
+    public String generateResponse(String userId, String message) {
+        logger.info("Thread: {} | Processing Chat for User: {}", Thread.currentThread().getName(), userId);
+
+        return chatClient.prompt()
+                .user(message)
+                .advisors(a -> a.param(CONVERSATION_ID, userId))
                 .call()
                 .content();
+    }
+
+    public void clearHistory(String userId) {
+        chatMemory.clear(userId);
+        logger.info("Memory cleared for User: {}", userId);
     }
     
 

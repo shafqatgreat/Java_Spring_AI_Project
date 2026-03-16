@@ -3,66 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spring AI Demo</title>
+    <title>Spring AI Demo - Episode 3</title>
     <style>
         body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f4f7f6; }
-        .card { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; }
-        h1 { color: #2c3e50; }
-        code { background: #eee; padding: 0.2rem 0.4rem; border-radius: 4px; }
+        .card { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; width: 400px; }
+        h1 { color: #2c3e50; font-size: 1.5rem; }
+        input { padding: 10px; width: 80%; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px; }
+        .btn-group { display: flex; gap: 10px; justify-content: center; margin-top: 10px; }
+        button { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        button:disabled { background-color: #bdc3c7; cursor: not-allowed; }
+        .btn-primary { background-color: #3498db; color: white; }
+        .btn-danger { background-color: #e74c3c; color: white; }
+        #aiResponse { margin-top: 20px; padding: 15px; background: #f9f9f9; border-radius: 4px; min-height: 50px; color: #2c3e50; line-height: 1.5; }
     </style>
 </head>
 <body>
     <div class="card">
-        <h1>Spring AI: From Zero to Hero</h1>
+        <h1>Spring AI: Zero to Hero</h1>
+        
+        <input type="text" id="userId" placeholder="User ID (e.g. Mavrick)" value="Mavrick">
+        
         <input type="text" id="userPrompt" placeholder="Ask Gemini something...">
 
-        <button onclick="askGemini()">Ask AI</button>
-        
-        <div id="aiResponse" style="margin-top: 20px; font-weight: bold; color: #2c3e50;">
-        AI response will appear here...
+        <div class="btn-group">
+            <button class="btn-primary" onclick="askGemini()">Ask AI</button>
+            <button class="btn-danger" onclick="clearMemory()">Clear History</button>
         </div>
-
+        
+        <div id="aiResponse">
+            AI response will appear here...
+        </div>
     </div>
-</body>
-</html>
-
 
 <script>
-
     async function askGemini() {
+        const userId = document.getElementById('userId').value;
         const input = document.getElementById('userPrompt');
         const display = document.getElementById('aiResponse');
-        const button = document.querySelector('button');
-        console.log('AskGemini is called');
-        // 1. Get the user's message
-        const message = input.value;
-        if (!message) return alert("Please type something first!");
+        const button = document.querySelector('.btn-primary');
 
-        // 2. Show a loading state
+        if (!userId) return alert("Please enter a User ID!");
+        if (!input.value) return alert("Please type a message!");
+
         display.innerText = "Gemini is thinking...";
         button.disabled = true;
 
         try {
-            // 3. The Fetch Call (Our Voice talking to the REST Controller)
-            // We use the URL defined in our Java Controller: /api/chat
-            const response = await fetch(`/api/chat?message=${encodeURIComponent(message)}`);
-
-            // 4. Convert the 'Universal Language' (JSON) back to a Java Script Object
+            // Path must match your @GetMapping in AiController
+            const response = await fetch(`/api/ai/chat?userId=${encodeURIComponent(userId)}&message=${encodeURIComponent(input.value)}`);
             const data = await response.json();
-
-            // 5. Update the UI with the 'answer' from our Java Record
-            display.innerText = data.answer;
             
-            
+            // Sync with Java Record: public record AiResponse(String status, String answer)
+            display.innerText = data.answer || "Error: Response field 'answer' missing."; 
+            input.value = ""; 
         } catch (error) {
             display.innerText = "Error: Could not connect to the AI server.";
-            console.error("Fetch error:", error);
+            console.error(error);
         } finally {
             button.disabled = false;
         }
-
     }
 
+    // Correlates with: geminiService.clearHistory(userId)
+    async function clearMemory() {
+        const userId = document.getElementById('userId').value;
+        const display = document.getElementById('aiResponse');
+        
+        if (!userId) return alert("Enter a User ID to clear!");
 
+        display.innerText = "Clearing history...";
 
+        try {
+            // Matches @DeleteMapping("/api/memory/{userId}")
+            const response = await fetch(`/api/ai/memory/${encodeURIComponent(userId)}`, {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                display.innerText = `History successfully wiped for: ${userId}`;
+            } else {
+                display.innerText = "Server refused to clear memory.";
+            }
+        } catch (error) {
+            display.innerText = "Error: Connection failed while clearing memory.";
+            console.error(error);
+        }
+    }
 </script>
+</body>
+</html>
